@@ -2,84 +2,32 @@
 title: ProviderObserver
 ---
 
-[ProviderObserver] écoute les changements d'un ProviderContainer.
+import CodeBlock from "@theme/CodeBlock";
+import logger from "!!raw-loader!/docs/concepts/provider_observer_logger.dart";
+import { trimSnippet } from "../../src/components/CodeSnippet";
 
-Pour l'utiliser, étendez (extend) la classe ProviderObserver et surchargez (override) 
-la méthode que vous souhaitez utiliser.
+[ProviderObserver] hört Veränderungen eines ProviderContainers zu.
 
-- `didAddProvider` est appelé chaque fois qu'un provider a été initialisé, et la valeur exposée est value.
-- `didDisposeProvider` est appelé chaque fois que le provider A a été éliminé.
-- `didUpdateProvider` est appelé à chaque fois que mes providers émettent une notification.
+To use it, extend the class ProviderObserver and override the method you like to use.
+Zur Verwendung können Sie einfach von der Klasse ProviderObserver erben und die Methode überschreiben, die Sie benötigen.
 
-### Usage: 
+[ProviderObserver] hat drei Methoden:
 
-Un cas d'utilisation simple de [ProviderObserver], est d'enregistrer 
-les changements dans les providers en surchargeant (override) la méthode `didUpdateProvider`.
+- `didAddProvider` wird jedes mal gerufen, wenn ein Provider erzeugt wurde und seinen Wert zur bereitgestellt hat.
+- `didDisposeProvider` wird jedes mal gerufen, wenn ein Provider entsorged (disposed) wird.
+- `didUpdateProvider` wird jedes mal gerufen, wenn ein Provider eine Benachrichtigung versendet.
 
-```dart
-// Un exemple de compteur mis en œuvre avec riverpod avec Logger
+### Verwendung :
 
-class Logger extends ProviderObserver {
-  @override
-  void didUpdateProvider(
-    ProviderBase provider,
-    Object? previousValue,
-    Object? newValue,
-    ProviderContainer container,
-  ) {
-    print('''
-{
-  "provider": "${provider.name ?? provider.runtimeType}",
-  "newValue": "$newValue"
-}''');
-  }
-}
+Ein einfacher Usecase für [ProviderObserver] ist es, Veränderungen in Providern zu loggen indem die Methode `didUpdateProvider` überschrieben wird.
+<CodeBlock>{trimSnippet(logger)}</CodeBlock>
 
-void main() {
-  runApp(
-    // L'ajout de ProviderScope active Riverpod pour l'ensemble du projet.
-    // Ajout de notre Logger à la liste des observateurs.
-    ProviderScope(observers: [Logger()], child: MyApp()),
-  );
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(home: Home());
-  }
-}
-
-final counterProvider = StateProvider((ref) => 0);
-
-class Home extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Counter example')),
-      body: Center(
-        child: Consumer(builder: (context, ref, _) {
-          final count = ref.watch(counterProvider).state;
-          return Text('$count');
-        }),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.read(counterProvider).state++,
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-```
-
-Maintenant, chaque fois que la valeur de notre provider est mise à jour, le logger l'enregistrera :
+Jetzt wird jede Veränderung des Wertes der Provider vom Logger geloggt:
 
 ```
 I/flutter (16783): {
 I/flutter (16783):   "provider": "counter",
-I/flutter (16783):   "newValue": "Instance of 'StateController<int>'"
+I/flutter (16783):   "newValue": "1"
 I/flutter (16783): }
 ```
 
